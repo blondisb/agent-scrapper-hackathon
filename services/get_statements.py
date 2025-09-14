@@ -26,7 +26,6 @@ async def scrape_statements(base_url: str, abn: str):
             resp = await client.get(statements_url, params=params, timeout=15)
             resp.raise_for_status()
             tree = html.fromstring(resp.content)
-            log_normal(tree)
 
         matches = []
 
@@ -68,8 +67,7 @@ async def scrape_statements(base_url: str, abn: str):
                 "countries": countries
             })
 
-        
         return matches
     except Exception as e:
-        log_error(e, "get_statements")
+        log_error(e, "scrape_statements")
         raise JSONResponse(status_code=500, content={"error": str(e)})
