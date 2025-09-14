@@ -1,0 +1,19 @@
+version: "3.9"
+
+services:
+  scraper-api:
+    build: .
+    container_name: scraper-api
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      # URL base para scrapear (puedes cambiarla según tu caso)
+      BASE_URL: "https://abr.business.gov.au/Search/ResultsActive"
+      # Número de workers (opcional)
+      UVICORN_WORKERS: "2"
+      # Configuración de proxy (si tienes uno configurado)
+      HTTP_PROXY: ""
+      HTTPS_PROXY: ""
+    volumes:
+      - .:/app  # Opcional: monta tu código local para desarrollo
