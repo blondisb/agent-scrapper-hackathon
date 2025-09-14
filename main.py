@@ -64,7 +64,7 @@ async def search_au_statemens(abn: str) -> dict:
 @app.delete(f"{BASE_URL}/deletefolder/")
 def delete_folder(folder_name: str = '.'):
 
-    REPO_PATH = "./tmp"
+    REPO_PATH = "/app/tmp"
     if " " in folder_name: folder_name = folder_name.replace(" ", "")
 
     folder_path = os.path.join(REPO_PATH, folder_name)

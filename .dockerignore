@@ -2,10 +2,6 @@
 .env
 .env.*
 
-# Git
-.git
-.gitignore
-
 # Development files
 __pycache__
 *.pyc
