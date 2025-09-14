@@ -1,4 +1,4 @@
-# ---- Build stage ----
+# ---- Build stage ---- 
 FROM python:3.11-slim AS build
 
 # Dependencias del sistema necesarias para lxml
@@ -11,9 +11,9 @@ WORKDIR /app
 # Copiamos primero requirements.txt (mejora cacheo de capas)
 COPY requirements.txt .
 
-# Instalamos dependencias en carpeta temporal
+# Instalamos dependencias globalmente
 RUN python -m pip install --upgrade pip \
-    && pip install --no-cache-dir --target=/install -r requirements.txt
+    && pip install --no-cache-dir -r requirements.txt
 
 # ---- Final stage ----
 FROM python:3.11-slim
@@ -27,18 +27,19 @@ RUN apt-get update \
 RUN useradd --no-create-home appuser
 WORKDIR /app
 
-# Copiar dependencias desde build
-COPY --from=build /install /usr/local
+# Copiar dependencias ya instaladas desde build
+COPY --from=build /usr/local /usr/local
 
 # Cambiar a appuser antes de copiar el código
 USER appuser
 WORKDIR /app
 
-# Copiar código de la app (los archivos serán propiedad de appuser)
+# Copiar código de la app
 COPY --chown=appuser:appuser . /app
 
 # Puerto expuesto
 EXPOSE 8080
 
 # Comando de arranque usando variable de entorno PORT
-CMD uvicorn main:app --host 0.0.0.0 --port ${PORT:-8080} --proxy-headers
+CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080", "--proxy-headers"]
+
