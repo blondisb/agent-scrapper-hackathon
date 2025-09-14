@@ -11,7 +11,7 @@ services:
       # URL base para scrapear (puedes cambiarla según tu caso)
       BASE_URL: "/outslavery"
       ABN_URL: "https://abr.business.gov.au/Search/ResultsActive"
-      AU_STATEMENTS_URL: "https://modernslaveryregister.gov.au/statements/"
+      AU_MODERNSLAVERY: "https://modernslaveryregister.gov.au"
       # Puerto requerido por Cloud Run
       PORT: "8080"
       # Número de workers (opcional)
