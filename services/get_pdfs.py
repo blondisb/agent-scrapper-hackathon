@@ -8,7 +8,7 @@ from utils.loggger import log_error, log_normal
 async def scrape_pdf(base_url: str, abn: str,json_statesments: list):
     """
     """
-    folder = f"tmp/{abn}/pdf"
+    folder = f"/tmp/{abn}/pdf"
     os.makedirs(folder, exist_ok=True)
     # json_pdf_url = {}
 
