@@ -64,11 +64,15 @@ async def search_au_statemens(abn: str) -> dict:
 @app.delete(f"{BASE_URL}/deletefolder/")
 def delete_folder(folder_name: str = '.'):
 
-    REPO_PATH = "/app/tmp"
-    if " " in folder_name: folder_name = folder_name.replace(" ", "")
 
-    folder_path = os.path.join(REPO_PATH, folder_name)
+    folder_name = folder_name.replace(" ", "")
+    # Siempre trabajar bajo /tmp
+    folder_path = os.path.abspath(os.path.join("/tmp", folder_name))
     log_normal(f"IN: {folder_path}")
+
+    # Seguridad: validar que la ruta está dentro de /tmp
+    if not folder_path.startswith("/tmp"):
+        raise HTTPException(status_code=400, detail="Ruta no permitida")
 
   
     try:
@@ -76,15 +80,13 @@ def delete_folder(folder_name: str = '.'):
 
         if os.path.exists(folder_path):
             contents = os.listdir(folder_path)
-            # Delete the folder and all its content
             shutil.rmtree(folder_path)
         else:
-            log_normal(f"La carpeta {folder_path} no existe.", "delete_folder")
+            return {"message": f"La carpeta {folder_name} no existe."}
 
         log_normal(f"📂 Contenido deleteado de '{folder_name}': {contents}", "delete_folder")  # 👈 imprime en consola del contenedor
         return {"folder": folder_name, "contents": contents}
     
-
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al limpiar la carpeta: {str(e)}")
 
