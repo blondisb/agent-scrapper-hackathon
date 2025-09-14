@@ -1,15 +1,17 @@
 import re
-from fastapi import FastAPI, Query
 from fastapi.responses import JSONResponse
 import httpx
 from lxml import html
+from utils.loggger import log_error, log_normal
 
 
-async def get_au_comanies(BASE_URL: str, company: str):
+async def get_au_comanies(ABN_URL: str, company: str):
     try:
+        log_normal(ABN_URL)
         async with httpx.AsyncClient() as client:
-            resp = await client.get(BASE_URL, params={"SearchText": company}, timeout=15)
+            resp = await client.get(ABN_URL, params={"SearchText": company}, timeout=15)
             resp.raise_for_status()
+            print(1, resp)
 
         tree = html.fromstring(resp.text)
 
@@ -40,8 +42,6 @@ async def get_au_comanies(BASE_URL: str, company: str):
                 location = cols[3].text_content().strip()
                 location = re.sub(r"\s+", " ", location)
 
-                print(5, results)
-
                 if name:
                     results.append({
                         "id": abn,
@@ -52,4 +52,5 @@ async def get_au_comanies(BASE_URL: str, company: str):
                     })
         return JSONResponse(content={"matches": results})
     except Exception as e:
-            return JSONResponse(status_code=500, content={"error": str(e)})
+        log_error(e)
+        raise JSONResponse(status_code=500, content={"error": str(e)})
