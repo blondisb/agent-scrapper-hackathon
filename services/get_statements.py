@@ -5,11 +5,12 @@ from lxml import html
 from utils.loggger import log_error, log_normal
 
 
-async def scrape_statements(BASE_URL, abn: str):
+async def scrape_statements(base_url: str, abn: str):
     """
     Scrapea el Modern Slavery Register para un ABN dado.
     Retorna una lista de diccionarios con href y la info textual.
     """
+    statements_url = f"{base_url}/statements/"
     params = {
         "q": abn,
         "search_type": "abn",
@@ -22,7 +23,7 @@ async def scrape_statements(BASE_URL, abn: str):
     try:
 
         async with httpx.AsyncClient() as client:
-            resp = await client.get(BASE_URL, params=params, timeout=15)
+            resp = await client.get(statements_url, params=params, timeout=15)
             resp.raise_for_status()
             tree = html.fromstring(resp.content)
             log_normal(tree)
@@ -32,7 +33,7 @@ async def scrape_statements(BASE_URL, abn: str):
         for item in tree.xpath('//a[contains(@class,"search-results__item")]'):
             href = item.xpath('./@href')[0]
             href = (
-                "https://modernslaveryregister.gov.au" + href
+                base_url + href
                 if href.startswith("/")
                 else href
             )
@@ -61,14 +62,14 @@ async def scrape_statements(BASE_URL, abn: str):
 
             matches.append({
                 "href": href,
-                "abn": abn_val,
+                "abn": abn,
                 "name": name_val,
                 "date": date_val,
                 "countries": countries
             })
 
         
-        return JSONResponse(content={"matches": matches})
+        return matches
     except Exception as e:
-        log_error(e)
+        log_error(e, "get_statements")
         raise JSONResponse(status_code=500, content={"error": str(e)})

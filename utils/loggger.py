@@ -1,13 +1,14 @@
 import datetime
+from typing import Optional
 
-dttn = datetime.datetime.now()
-
-def log_normal(data):
+def log_normal(data, where: Optional[str] = None):
+    dttn = datetime.datetime.now()
     print(
-        f"\n{dttn} || MSG: {data}"
+        f"\n{dttn} || {where} || MSG: {data}"
     )
 
-def log_error(data):
+def log_error(data,  where: Optional[str] = None):
+    dttn = datetime.datetime.now()
     print(
-        f"\n============================\n {dttn} || ERROR: {data} \n\n"
+        f"\n============================\n {dttn} || {where} || ERROR: {data} \n\n"
     )
