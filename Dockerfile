@@ -38,7 +38,7 @@ WORKDIR /app
 COPY --chown=appuser:appuser . /app
 
 # Puerto expuesto
-EXPOSE 8000
+EXPOSE 8080
 
-# Comando de arranque
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers"]
+# Comando de arranque usando variable de entorno PORT
+CMD uvicorn main:app --host 0.0.0.0 --port ${PORT:-8080} --proxy-headers

@@ -1,4 +1,5 @@
 import os, re
+import uvicorn
 from fastapi import FastAPI, Query
 from fastapi.responses import JSONResponse
 import httpx
@@ -22,6 +23,8 @@ async def search_company(company: str = Query(..., min_length=2)) -> dict:
 
     return resp
 
-    
 
+if __name__ == "__main__":
     
+    port = int(os.getenv("PORT", 8080))
+    uvicorn.run("main:app", host="0.0.0.0", port=port)
