@@ -63,7 +63,7 @@ async def search_au_statemens(abn: str) -> dict:
 
     statements = await scrape_statements(AU_MODERNSLAVERY, abn)    
     pdf_names = await scrape_pdf(AU_MODERNSLAVERY, abn, statements, f"{abn_path}/pdf")
-    llm_response = main_agents(abn, pdf_names, f"{abn_path}/pdf", txt_path)
+    llm_response = await main_agents(abn, pdf_names, f"{abn_path}/pdf", txt_path)
     
     log_normal(f"OUT2: {abn} || {llm_response}", "search_au_statemens")
     return {"data": llm_response}

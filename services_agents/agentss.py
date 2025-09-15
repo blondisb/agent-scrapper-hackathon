@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 
 load_dotenv(find_dotenv(), override=True)
 
-def main_agents(abn: str, pdf_names: list, pdf_folder, txt_path):
+async def main_agents(abn: str, pdf_names: list, pdf_folder, txt_path):
     
     try:
         client = genai.Client()
@@ -57,18 +57,21 @@ def main_agents(abn: str, pdf_names: list, pdf_folder, txt_path):
             contents=contents
         )
         log_normal(f"LLM response: {response}", "main_agents")
-        save_file(txt_path, response.text)
+        
+        save_file(
+            txt_path,
+            f"(({count.total_tokens}, {response.usage_metadata.total_token_count})) || {response.text}"
+        )
 
         # print(response.text)
-        return JSONResponse(
-            content={
-                "tokens": {
-                    "input": count.total_tokens,
-                    "total": response.usage_metadata.total_tokens
-                },
-                "llm_response": response.text
-            }
-        )
+        return {
+            "tokens": {
+                "input": count.total_tokens,
+                "total": response.usage_metadata.total_token_count
+            },
+            "llm_response": response.text
+        }
+        
     except Exception as e:
         log_error(f"Error al llamar al modelo: {e}", "main_agents")
         raise e
