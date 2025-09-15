@@ -5,12 +5,12 @@ from lxml import html
 from utils.loggger import log_error, log_normal
 
 
-async def scrape_pdf(base_url: str, abn: str,json_statesments: list):
+async def scrape_pdf(base_url: str, abn: str, json_statesments: list, pdf_folder) -> list:
     """
     """
-    folder = f"/tmp/{abn}/pdf"
-    os.makedirs(folder, exist_ok=True)
+    os.makedirs(pdf_folder, exist_ok=True)
     # json_pdf_url = {}
+    pdf_paths = []
 
     for dicts in json_statesments:
         statement_url = dicts["href"]
@@ -32,19 +32,21 @@ async def scrape_pdf(base_url: str, abn: str,json_statesments: list):
                 # json_pdf_url[dicts["date"]] = pdf_url
 
                 pdf_name = pdf_url.strip("/").split("/")[-2] + ".pdf"
-                pdf_path = os.path.join(folder, pdf_name)
+                pdf_path = os.path.join(pdf_folder, pdf_name)
 
                 pdf_resp = await client.get(pdf_url, timeout=30)
                 pdf_resp.raise_for_status()
 
                 with open(pdf_path, "wb") as f:
                     f.write(pdf_resp.content)
-                log_normal(f"✅ PDF descargado: {pdf_path}", "scrape_pdf")
-
+                
+                pdf_paths.append(pdf_path)
                 total_time = time.time() - start_time
                 log_normal(f"single pdf took {total_time:.2f} seconds", "scrape_pdf")
 
-                # return json_pdf_url
         except Exception as e:
             log_error(e, "scrape_pdf")
             raise JSONResponse(status_code=500, content={"error": str(e)})
+        
+    log_normal(f"✅ PDF descargado: {pdf_paths}", "scrape_pdf")
+    return pdf_paths
