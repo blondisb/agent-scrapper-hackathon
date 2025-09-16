@@ -27,8 +27,8 @@ load_dotenv(find_dotenv(), override=True)
 app = FastAPI()
 
 BASE_URL = os.getenv("BASE_URL", "/outslavery")
-ABN_URL = os.getenv("ABN_URL", "https://abr.business.gov.au/Search/ResultsActive")
-AU_STATEMENTS_URL = os.getenv("AU_MODERNSLAVERY", "https://modernslaveryregister.gov.au")
+AU_COMPANIES_ID = os.getenv("AU_COMPANIES_ID", "https://abr.business.gov.au/Search/ResultsActive")
+AU_STATEMENTS_URL = os.getenv("AU_STATEMENTS_URL", "https://modernslaveryregister.gov.au")
 BASE_PATH_AU = "/tmp/au"
 
 UK_COMPANIES_ID = os.getenv("UK_COMPANIES_ID", "https://find-and-update.company-information.service.gov.uk/search/companies")
@@ -44,7 +44,7 @@ async def search_company(company: str = Query(..., min_length=2)) -> dict:
     y devuelve IDs y nombres extraídos con XPath.
     """
     log_normal(f"IN: {company}")
-    resp = await au_companies_id(ABN_URL, company)
+    resp = await au_companies_id(AU_COMPANIES_ID, company)
     
     log_normal(f"OUT: {resp}")
     return resp
