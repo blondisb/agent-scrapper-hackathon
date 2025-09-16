@@ -5,14 +5,14 @@ from lxml import html
 from utils.loggger import log_error, log_normal
 
 
-async def scrape_pdf(base_url: str, abn: str, json_statesments: list, pdf_folder) -> list:
+async def au_pdfs(statesments: list, pdf_folder: str) -> list:
     """
     """
     os.makedirs(pdf_folder, exist_ok=True)
     # json_pdf_url = {}
     pdf_paths = []
 
-    for dicts in json_statesments:
+    for dicts in statesments:
         statement_url = dicts["href"]
         
         try:
@@ -28,7 +28,7 @@ async def scrape_pdf(base_url: str, abn: str, json_statesments: list, pdf_folder
                     log_error(f"⚠ No se encontró PDF en {statement_url}")
                     continue
 
-                pdf_url = base_url + iframe_src[0] if iframe_src[0].startswith("/") else iframe_src[0]
+                pdf_url = iframe_src[0] if iframe_src[0].startswith("/") else iframe_src[0]
                 # json_pdf_url[dicts["date"]] = pdf_url
 
                 pdf_name = pdf_url.strip("/").split("/")[-2] + ".pdf"

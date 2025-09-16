@@ -5,7 +5,7 @@ from lxml import html
 from utils.loggger import log_error, log_normal
 
 
-async def uk_pdf(base_url: str, id_company: str, json_statesments: list, pdf_folder: str) -> list:
+async def uk_pdfs(json_statesments: list, pdf_folder: str) -> list:
     """
     """
     os.makedirs(pdf_folder, exist_ok=True)

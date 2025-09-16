@@ -5,7 +5,7 @@ from lxml import html
 from utils.loggger import log_error, log_normal
 
 
-async def scrape_statements(base_url: str, abn: str) -> list:
+async def au_statements(base_url: str, abn: str) -> list:
     """
     Scrapea el Modern Slavery Register para un ABN dado.
     Retorna una lista de diccionarios con href y la info textual.
@@ -60,7 +60,7 @@ async def scrape_statements(base_url: str, abn: str) -> list:
                 abn_val = explicit_abn.replace("ABN:", "").strip()
 
             matches.append({
-                "href": href,
+                "href": base_url+href,
                 "abn": abn,
                 "name": name_val,
                 "date": date_val,

@@ -5,7 +5,7 @@ from lxml import html
 from utils.loggger import log_error, log_normal
 
 
-async def get_au_comanies(ABN_URL: str, company: str):
+async def au_companies_id(ABN_URL: str, company: str):
     try:
         log_normal(ABN_URL)
         async with httpx.AsyncClient() as client:

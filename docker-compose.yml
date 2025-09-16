@@ -23,5 +23,7 @@ services:
       HTTPS_PROXY: ""
       # API keys loaded from .env file
       GEMINI_API_KEY: ${GEMINI_API_KEY}
+      UK_COMPANIES_ID: "https://find-and-update.company-information.service.gov.uk/search/companies"
+      UK_STATEMENTS_URL: "https://modern-slavery-statement-registry.service.gov.uk"
     volumes:
       - .:/app  # Opcional: monta tu código local para desarrollo

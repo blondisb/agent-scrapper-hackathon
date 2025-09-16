@@ -11,15 +11,15 @@ import shutil
 
 from utils.loggger import log_normal
 from utils.utils import delete_folders, find_existing_file
-
-from services.get_AU_companies import get_au_comanies
-from services.get_statements import scrape_statements
-from services.get_pdfs import scrape_pdf
 from services_agents.agentss import main_agents
+
+from services.au.get_AU_companies import au_companies_id
+from services.au.get_statements import au_statements
+from services.au.get_pdfs import au_pdfs
 
 from services.uk.get_uk_idcompany import uk_companies_id
 from services.uk.get_uk_statements import uk_statements
-from services.uk.get_uk_pdfs import uk_pdf
+from services.uk.get_uk_pdfs import uk_pdfs
 
 
 # ================================================================================================================================================
@@ -28,8 +28,8 @@ app = FastAPI()
 
 BASE_URL = os.getenv("BASE_URL", "/outslavery")
 ABN_URL = os.getenv("ABN_URL", "https://abr.business.gov.au/Search/ResultsActive")
-AU_MODERNSLAVERY = os.getenv("AU_MODERNSLAVERY", "https://modernslaveryregister.gov.au")
-BASE_PATH = "/tmp"
+AU_STATEMENTS_URL = os.getenv("AU_MODERNSLAVERY", "https://modernslaveryregister.gov.au")
+BASE_PATH_AU = "/tmp/au"
 
 UK_COMPANIES_ID = os.getenv("UK_COMPANIES_ID", "https://find-and-update.company-information.service.gov.uk/search/companies")
 UK_STATEMENTS_URL = os.getenv("UK_STATEMENTS_URL", "https://modern-slavery-statement-registry.service.gov.uk")
@@ -44,7 +44,7 @@ async def search_company(company: str = Query(..., min_length=2)) -> dict:
     y devuelve IDs y nombres extraídos con XPath.
     """
     log_normal(f"IN: {company}")
-    resp = await get_au_comanies(ABN_URL, company)
+    resp = await au_companies_id(ABN_URL, company)
     
     log_normal(f"OUT: {resp}")
     return resp
@@ -57,13 +57,13 @@ async def search_au_statemens(abn: str) -> dict:
     if " " in abn: abn = abn.replace(" ", "")
     log_normal(f"IN: {abn}", "search_au_statemens")
 
-    abn_path = f"{BASE_PATH}/{abn}"
+    abn_path = f"{BASE_PATH_AU}/{abn}"
     txt_path = f"{abn_path}/summary.txt"
     llm_response = find_existing_file(txt_path)
 
     if llm_response is None:
-        statements      = await uk_statements(AU_MODERNSLAVERY, abn)    
-        pdf_names       = await scrape_pdf(AU_MODERNSLAVERY, abn, statements, f"{abn_path}/pdf")
+        statements      = await au_statements(AU_STATEMENTS_URL, abn)    
+        pdf_names       = await au_pdfs(statements, f"{abn_path}/pdf")
         llm_response    = await main_agents(abn, pdf_names, f"{abn_path}/pdf", txt_path)
     
     log_normal(f"OUT2: {abn} || {llm_response}", "search_au_statemens")
@@ -102,7 +102,7 @@ async def search_uk_statemens(id_company: str) -> dict:
         statements = await uk_statements(UK_STATEMENTS_URL, id_company)
         log_normal(statements, "uk_statements")
         # .
-        pdf_names = await uk_pdf(AU_MODERNSLAVERY, id_company, statements, f"{company_path}/pdf")
+        pdf_names = await uk_pdfs(statements, f"{company_path}/pdf")
         log_normal(pdf_names, "uk_statements")
         # .
         llm_response = await main_agents(id_company, pdf_names, f"{company_path}/pdf", txt_path)
