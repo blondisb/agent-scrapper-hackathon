@@ -4,3 +4,10 @@ httpx
 lxml
 python-dotenv
 google-genai
+# crewai
+# requests
+# beautifulsoup4
+# langchain
+# # langchain_community
+# langchain-ollama
+# crewai[tools]

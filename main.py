@@ -21,6 +21,8 @@ from services.uk.get_uk_idcompany import uk_companies_id
 from services.uk.get_uk_statements import uk_statements
 from services.uk.get_uk_pdfs import uk_pdfs
 
+from services.ca.ca_statements import ca_statements1
+from services.ca.ca_pdfs import ca_pdfs
 
 # ================================================================================================================================================
 load_dotenv(find_dotenv(), override=True)
@@ -34,6 +36,11 @@ BASE_PATH_AU = "/tmp/au"
 UK_COMPANIES_ID = os.getenv("UK_COMPANIES_ID", "https://find-and-update.company-information.service.gov.uk/search/companies")
 UK_STATEMENTS_URL = os.getenv("UK_STATEMENTS_URL", "https://modern-slavery-statement-registry.service.gov.uk")
 BASE_PATH_UK = "/tmp/uk"
+
+CA_BASE_URL = "https://www.publicsafety.gc.ca/cnt/rsrcs/lbrr/ctlg"
+CA_FINDER_URL="/rslts-en.aspx?l=2,3,7&a="
+BASE_PATH_CA = "/tmp/ca"
+
 
 
 # ================================================================================================================================================
@@ -110,6 +117,41 @@ async def search_uk_statemens(id_company: str) -> dict:
     log_normal(f"OUT1: {id_company} || {llm_response}", "search_uk_statemens")
     return {"data": llm_response}
 
+
+
+
+
+# ================================================================================================================================================
+@app.get(f"{BASE_URL}/CAstatements")
+async def search_ca_company(company_name: str = Query(..., min_length=2)) -> dict:
+    """
+    """
+    log_normal(f"IN: {company_name}")
+
+    if " " in company_name:
+        company_url = company_name.replace(" ", "+")
+        company_id = company_name.replace(" ", "_")
+    else:
+        company_url = company_name
+        company_id = company_name
+
+    pdf_folder = f"{BASE_PATH_CA}/{company_id}/pdf"
+    txt_path = f"{BASE_PATH_CA}/{company_id}/summay.txt"
+    search_url = CA_BASE_URL + CA_FINDER_URL + company_url
+
+    llm_response = find_existing_file(txt_path)
+    if llm_response is None:
+        
+        resp_stt = await ca_statements1(search_url, CA_BASE_URL)
+        log_normal(resp_stt, "search_ca_company")
+
+        pdf_names = await ca_pdfs(resp_stt, pdf_folder)
+        log_normal(pdf_names, "search_ca_company/pdf_names")
+
+        llm_response = await main_agents(company_id, pdf_names, pdf_folder, txt_path)
+
+    log_normal(f"OUT: {llm_response}")
+    return {"data": llm_response}
 
     
 
