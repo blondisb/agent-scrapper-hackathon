@@ -12,6 +12,7 @@ import shutil
 from utils.loggger import log_normal
 from utils.utils import delete_folders, find_existing_file
 from services_agents.agentss import main_agents
+from services_agents.scrapper_agent import main_scrapper_agent
 
 from services.au.get_AU_companies import au_companies_id
 from services.au.get_statements import au_statements
@@ -153,6 +154,25 @@ async def search_ca_company(company_name: str = Query(..., min_length=2)) -> dic
     log_normal(f"OUT: {llm_response}")
     return {"data": llm_response}
 
+
+
+
+
+# ================================================================================================================================================
+@app.get(f"{BASE_URL}/scrapperagent")
+async def search_company(
+    company: str = Query(..., min_length=2),
+    country: str = Query(..., min_length=2)
+) -> dict:
+    """
+    Busca una compañía en ABN Lookup (ejemplo) usando POST al formulario
+    y devuelve IDs y nombres extraídos con XPath.
+    """
+    log_normal(f"IN: {company, country}")
+    resp = await main_scrapper_agent(company.upper(), country.upper())
+    
+    log_normal(f"OUT: {resp}")
+    return {"data": resp}
     
 
 # ================================================================================================================================================
