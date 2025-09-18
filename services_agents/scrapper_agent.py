@@ -3,6 +3,8 @@ from crewai_tools import  SerperDevTool, ScrapeWebsiteTool #, FirecrawlScrapeWeb
 from langchain_ollama import OllamaLLM
 from utils.loggger import log_error
 from services_agents.scrapper_agent_params import backstory1, goal1, task_description1, output1
+from smolagents import DuckDuckGoSearchTool, CodeAgent
+
 
 # Definir el LLM (Ollama en local)
 # llm1 = OllamaLLM(

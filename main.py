@@ -1,18 +1,22 @@
 import os, re
 import time
 import uvicorn
-from fastapi import FastAPI, Query
-from fastapi.responses import JSONResponse
 import httpx
+import shutil
+
 from lxml import html
 from dotenv import load_dotenv, find_dotenv
 from fastapi import FastAPI, HTTPException
-import shutil
+from fastapi import FastAPI, Query
+from fastapi.responses import JSONResponse
+from smolagents import LiteLLMModel
 
 from utils.loggger import log_normal
 from utils.utils import delete_folders, find_existing_file
+
 from services_agents.agentss import main_agents
 from services_agents.scrapper_agent import main_scrapper_agent
+from services_agents.search_agent import url_finder_agent, visitor_agent
 
 from services.au.get_AU_companies import au_companies_id
 from services.au.get_statements import au_statements
@@ -42,6 +46,12 @@ CA_BASE_URL = "https://www.publicsafety.gc.ca/cnt/rsrcs/lbrr/ctlg"
 CA_FINDER_URL="/rslts-en.aspx?l=2,3,7&a="
 BASE_PATH_CA = "/tmp/ca"
 
+
+model1 = LiteLLMModel(
+    model_id = "gemini/gemini-2.0-flash", api_key = os.getenv("GEMINI_API_KEY")
+    # model_id = "gemini/gemini-1.5-flash", api_key = os.getenv("GEMINI_API_KEY")
+    # model_id = "ollama/qwen2.5:0.5b"
+)
 
 
 # ================================================================================================================================================
@@ -169,8 +179,11 @@ async def search_company(
     y devuelve IDs y nombres extraídos con XPath.
     """
     log_normal(f"IN: {company, country}")
-    resp = await main_scrapper_agent(company.upper(), country.upper())
-    
+    # resp = await main_scrapper_agent(company.upper(), country.upper())
+    # url = await url_finder_agent(model1, company.upper(), country.upper())
+
+    url = "https://www.3mcanada.ca/3M/en_CA/company-ca/"
+    resp = await visitor_agent(model1, url)
     log_normal(f"OUT: {resp}")
     return {"data": resp}
     
