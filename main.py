@@ -11,8 +11,8 @@ from fastapi import FastAPI, Query
 from fastapi.responses import JSONResponse
 from smolagents import LiteLLMModel
 
-from utils.loggger import log_normal
-from utils.utils import delete_folders, find_existing_file
+from utils_folder.loggger import log_normal
+from utils_folder.utils import delete_folders, find_existing_file
 
 from services_agents.agentss import main_agents
 from services_agents.scrapper_agent import main_scrapper_agent

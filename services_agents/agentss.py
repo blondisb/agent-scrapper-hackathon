@@ -1,7 +1,7 @@
 from google import genai
 from dotenv import load_dotenv, find_dotenv
-from utils.loggger import log_error, log_normal
-from utils.utils import delete_folders, save_file
+from utils_folder.loggger import log_error, log_normal
+from utils_folder.utils import delete_folders, save_file
 from fastapi.responses import JSONResponse
 
 load_dotenv(find_dotenv(), override=True)

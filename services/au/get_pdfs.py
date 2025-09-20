@@ -2,7 +2,7 @@ import os, time
 from fastapi.responses import JSONResponse
 import httpx
 from lxml import html
-from utils.loggger import log_error, log_normal
+from utils_folder.loggger import log_error, log_normal
 
 
 async def au_pdfs(statesments: list, pdf_folder: str) -> list:

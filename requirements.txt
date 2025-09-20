@@ -17,3 +17,5 @@ ddgs
 smolagents[litellm]
 markdownify
 sentence_transformers
+playwright
+# playwright install chromium

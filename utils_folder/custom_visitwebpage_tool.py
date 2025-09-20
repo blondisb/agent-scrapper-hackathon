@@ -3,12 +3,12 @@
 #
 
 import re
-
 from sentence_transformers import SentenceTransformer, CrossEncoder
-
 from smolagents import VisitWebpageTool
-
 import logging
+
+from custom_forward import customforward
+from forward_playwright import scrape_playwright
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +37,10 @@ class CustomVisitWebpageTool(VisitWebpageTool):
 
     def forward(self, url: str, query: str) -> str:
         logger.debug(f">> CustomVisitWebpageTool.forward: url={url}, query={query}")
-        content = super().forward(url=url)
+        
+        # content = super().forward(url=url)
+        # content = customforward(url)
+        content = scrape_playwright(url)
 
         results = self.get_sentences(content)
         results = self.apply_bi_encoder(query, results)
@@ -162,7 +165,9 @@ if __name__ == "__main__":
     # url = "https://modern-slavery-statement-registry.service.gov.uk/statement-summary/zZQEGdH8/2022"
     # query = "give me details abour modern slavery risks"
 
-    url = "https://www.tesla.com/en_ca" #"https://www.airbus.com/en"
+    # url = "https://www.tesla.com/en_ca" 
+    # url = "https://www.airbus.com/en"
+    url = "https://www.boeing.ca/"
     query = "talk me about financial results and modern slavery"
 
     tool = CustomVisitWebpageTool()

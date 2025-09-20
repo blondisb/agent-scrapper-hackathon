@@ -1,7 +1,7 @@
 from crewai import Agent, Task, Crew, LLM
 from crewai_tools import  SerperDevTool, ScrapeWebsiteTool #, FirecrawlScrapeWebsiteTool 
 from langchain_ollama import OllamaLLM
-from utils.loggger import log_error
+from utils_folder.loggger import log_error
 from services_agents.scrapper_agent_params import backstory1, goal1, task_description1, output1
 from smolagents import DuckDuckGoSearchTool, CodeAgent
 
