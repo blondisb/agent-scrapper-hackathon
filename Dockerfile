@@ -2,40 +2,38 @@
 FROM python:3.11-slim AS build
 
 # Dependencias del sistema necesarias para playwright + lxml
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-        build-essential \
-        libxml2-dev \
-        libxslt1-dev \
-        zlib1g-dev \
-        ca-certificates \
-        wget \
-        curl \
-        fonts-liberation \
-        libasound2 \
-        libatk1.0-0 \
-        libatk-bridge2.0-0 \
-        libcups2 \
-        libdbus-1-3 \
-        libdrm2 \
-        libgbm1 \
-        libglib2.0-0 \
-        libnspr4 \
-        libnss3 \
-        libx11-6 \
-        libx11-xcb1 \
-        libxcb1 \
-        libxcomposite1 \
-        libxcursor1 \
-        libxdamage1 \
-        libxext6 \
-        libxfixes3 \
-        libxi6 \
-        libxrandr2 \
-        libxrender1 \
-        libxss1 \
-        libxtst6 \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libnss3 \
+    libnspr4 \
+    libatk1.0-0 \
+    libatk-bridge2.0-0 \
+    libcups2 \
+    libdrm2 \
+    libgbm1 \
+    libxkbcommon0 \
+    libgtk-3-0 \
+    libpango1.0-0 \
+    libcairo2 \
+    libgdk-pixbuf2.0-0 \
+    libasound2 \
+    libatspi2.0-0 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxrandr2 \
+    libxrender1 \
+    libxi6 \
+    libxfixes3 \
+    libxtst6 \
+    libx11-6 \
+    libx11-xcb1 \
+    libxcb1 \
+    ca-certificates \
+    fonts-liberation \
+    wget \
+    curl \
+ && rm -rf /var/lib/apt/lists/*
+
+
 
 WORKDIR /app
 
@@ -45,6 +43,10 @@ WORKDIR /app
 RUN mkdir -p /tmp/huggingface \
     && chmod -R 777 /tmp/huggingface
 
+# Crear directorio para navegadores de playwright
+RUN mkdir -p /tmp/ms-playwright \
+    && chmod -R 777 /tmp/ms-playwright
+
 # Establecer variables de entorno para que HuggingFace use /tmp/huggingface
 ENV HF_HOME=/tmp/huggingface
 ENV TRANSFORMERS_CACHE=/tmp/huggingface/transformers
@@ -52,6 +54,7 @@ ENV HF_HUB_CACHE=/tmp/huggingface/hub
 # opcionales si usas datasets, etc.
 ENV HF_DATASETS_CACHE=/tmp/huggingface/datasets
 ENV HF_ASSETS_CACHE=/tmp/huggingface/assets
+ENV PLAYWRIGHT_BROWSERS_PATH=/tmp/ms-playwright
 
 
 
@@ -71,6 +74,7 @@ RUN python -m pip install --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt
 
 # Instalar chromium para playwright
+RUN playwright install --with-deps chromium
 RUN python -m playwright install chromium
 
 RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
@@ -118,13 +122,17 @@ RUN apt-get update \
 RUN mkdir -p /tmp/huggingface \
     && chmod -R 777 /tmp/huggingface
 
+# Crear directorio para navegadores de playwright
+RUN mkdir -p /tmp/ms-playwright \
+    && chmod -R 777 /tmp/ms-playwright
+
 # Establecer las mismas variables
 ENV HF_HOME=/tmp/huggingface
 ENV TRANSFORMERS_CACHE=/tmp/huggingface/transformers
 ENV HF_HUB_CACHE=/tmp/huggingface/hub
 ENV HF_DATASETS_CACHE=/tmp/huggingface/datasets
 ENV HF_ASSETS_CACHE=/tmp/huggingface/assets
-
+ENV PLAYWRIGHT_BROWSERS_PATH=/tmp/ms-playwright
 
 
 # Crear user no-root
@@ -133,7 +141,10 @@ WORKDIR /app
 
 # Copiar dependencias ya instaladas
 COPY --from=build /usr/local /usr/local
-COPY --from=build /root/.cache/ms-playwright /root/.cache/ms-playwright
+# COPY --from=build /root/.cache/ms-playwright /root/.cache/ms-playwright
+COPY --from=build /tmp/ms-playwright /tmp/ms-playwright
+RUN chown -R appuser:appuser /tmp/ms-playwright
+
 
 # Cambiar a user
 USER appuser
@@ -141,6 +152,8 @@ WORKDIR /app
 
 # Copiar código
 COPY --chown=appuser:appuser . /app
+
+
 
 EXPOSE 8080
 CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080", "--proxy-headers"]
