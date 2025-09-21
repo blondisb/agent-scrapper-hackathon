@@ -181,9 +181,6 @@ async def search_company(
     """
     log_normal(f"IN: {company, country}")
     url = await url_finder_agent(model1, company.upper(), country.upper())
-
-    # url = "https://www.3mcanada.ca/3M/en_CA/company-ca/"
-    # url = "https://www.toyota.ca/en/"
     resp = await reading_webpagecontent(url)
 
     log_normal(f"OUT: {resp}")

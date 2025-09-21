@@ -27,10 +27,22 @@ async def reading_webpagecontent(url):
             log_normal(f"Cantidad de tokens de entrada: {count.total_tokens}", "reading_webpagecontent")
 
             # Llamar al modelo limitando tokens de salida
+            # response = client.models.generate_content(
+            #     model="gemini-2.0-flash",
+            #     contents=content_page
+            # )
+
             response = client.models.generate_content(
-                model="gemini-2.0-flash",
-                contents=content_page
+                model="gemini-2.5-flash",
+                contents=f"""
+                    your task is find data related with **MODERN SLAVERY** in the following content
+                    your answer **ALWAYS** are going to be shorter, giving a confirmation if content contains or not, info related
+                    if contains, find pdf, links, texts, paragraph, etc.
+
+                    The following content is this: {content_page}               
+                """
             )
+
             return response.text
         else:
             return None
