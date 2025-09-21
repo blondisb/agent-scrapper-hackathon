@@ -27,7 +27,7 @@ async def url_finder_agent(model, company, country):
             https://www.decathlon.ca/en
     """
 
-    resp = agent.run(task=prompt, max_steps=4)
+    resp = agent.run(task=prompt, max_steps=6)
     return resp
 
 

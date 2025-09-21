@@ -184,7 +184,7 @@ async def search_company(
     resp = await reading_webpagecontent(url)
 
     log_normal(f"OUT: {resp}")
-    return {"data": resp}
+    return {"data": f"{url} || {resp}"}
     
 
 # ================================================================================================================================================
