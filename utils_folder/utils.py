@@ -1,6 +1,6 @@
 import os
 import shutil
-from utils.loggger import log_error, log_normal
+from utils_folder.loggger import log_error, log_normal
 from fastapi import HTTPException
 
 BASE_PATH = "/tmp"

@@ -1,0 +1,52 @@
+import os, time
+from fastapi.responses import JSONResponse
+import httpx
+from lxml import html
+from utils_folder.loggger import log_error, log_normal
+
+
+async def au_pdfs(statesments: list, pdf_folder: str) -> list:
+    """
+    """
+    os.makedirs(pdf_folder, exist_ok=True)
+    # json_pdf_url = {}
+    pdf_paths = []
+
+    for dicts in statesments:
+        statement_url = dicts["href"]
+        
+        try:
+            start_time = time.time()
+            async with httpx.AsyncClient() as client:
+
+                page = await client.get(statement_url, timeout=15)
+                page.raise_for_status()
+                page_tree = html.fromstring(page.content)
+
+                iframe_src = page_tree.xpath('/html/body/main/div/div[2]/div/div/iframe/@src')
+                if not iframe_src:
+                    log_error(f"⚠ No se encontró PDF en {statement_url}")
+                    continue
+
+                pdf_url = iframe_src[0] if iframe_src[0].startswith("/") else iframe_src[0]
+                # json_pdf_url[dicts["date"]] = pdf_url
+
+                pdf_name = pdf_url.strip("/").split("/")[-2] + ".pdf"
+                pdf_path = os.path.join(pdf_folder, pdf_name)
+
+                pdf_resp = await client.get(pdf_url, timeout=30)
+                pdf_resp.raise_for_status()
+
+                with open(pdf_path, "wb") as f:
+                    f.write(pdf_resp.content)
+                
+                pdf_paths.append(pdf_path)
+                total_time = time.time() - start_time
+                log_normal(f"single pdf took {total_time:.2f} seconds", "scrape_pdf")
+
+        except Exception as e:
+            log_error(e, "scrape_pdf")
+            raise JSONResponse(status_code=500, content={"error": str(e)})
+        
+    log_normal(f"✅ PDF descargado: {pdf_paths}", "scrape_pdf")
+    return pdf_paths

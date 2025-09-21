@@ -2,17 +2,17 @@ import os, time
 from fastapi.responses import JSONResponse
 import httpx
 from lxml import html
-from utils.loggger import log_error, log_normal
+from utils_folder.loggger import log_error, log_normal
 
 
-async def scrape_pdf(base_url: str, abn: str, json_statesments: list, pdf_folder) -> list:
+async def ca_pdfs(statesments: list, pdf_folder: str) -> list:
     """
     """
     os.makedirs(pdf_folder, exist_ok=True)
     # json_pdf_url = {}
     pdf_paths = []
 
-    for dicts in json_statesments:
+    for dicts in statesments:
         statement_url = dicts["href"]
         
         try:
@@ -23,15 +23,13 @@ async def scrape_pdf(base_url: str, abn: str, json_statesments: list, pdf_folder
                 page.raise_for_status()
                 page_tree = html.fromstring(page.content)
 
-                iframe_src = page_tree.xpath('/html/body/main/div/div[2]/div/div/iframe/@src')
+                iframe_src = page_tree.xpath('//section[@class="alert alert-info mrgn-tp-lg"]//a/@href')
                 if not iframe_src:
                     log_error(f"⚠ No se encontró PDF en {statement_url}")
                     continue
 
-                pdf_url = base_url + iframe_src[0] if iframe_src[0].startswith("/") else iframe_src[0]
-                # json_pdf_url[dicts["date"]] = pdf_url
-
-                pdf_name = pdf_url.strip("/").split("/")[-2] + ".pdf"
+                pdf_url = iframe_src[0].strip()
+                pdf_name = os.path.basename(pdf_url)  # obtiene el nombre real del archivo PDF
                 pdf_path = os.path.join(pdf_folder, pdf_name)
 
                 pdf_resp = await client.get(pdf_url, timeout=30)

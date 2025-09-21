@@ -4,3 +4,18 @@ httpx
 lxml
 python-dotenv
 google-genai
+firecrawl
+requests
+langchain-ollama
+smolagents[tools]
+ddgs
+smolagents[litellm]
+markdownify
+# sentence_transformers
+playwright # playwright install chromium
+# --------------
+# crewai[tools]
+# beautifulsoup4
+# langchain
+# # langchain_community
+# crewai

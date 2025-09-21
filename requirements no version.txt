@@ -1,0 +1,19 @@
+# uvicorn[standard]
+# fastapi
+# httpx
+# lxml
+# python-dotenv
+# google-genai
+# crewai
+# firecrawl
+# requests
+# # beautifulsoup4
+# # langchain
+# # # langchain_community
+# langchain-ollama
+# crewai[tools]
+# smolagents[tools]
+# ddgs
+# smolagents[litellm]
+# markdownify
+# sentence_transformers

@@ -1,7 +1,7 @@
 from google import genai
 from dotenv import load_dotenv, find_dotenv
-from utils.loggger import log_error, log_normal
-from utils.utils import delete_folders, save_file
+from utils_folder.loggger import log_error, log_normal
+from utils_folder.utils import delete_folders, save_file
 from fastapi.responses import JSONResponse
 
 load_dotenv(find_dotenv(), override=True)
@@ -49,14 +49,14 @@ async def main_agents(abn: str, pdf_names: list, pdf_folder, txt_path):
             model="gemini-2.0-flash",
             contents=contents
         )
-        log_normal(f"Cantidad de tokens de entrada: {count.total_tokens}", "main_agents")
+        # log_normal(f"Cantidad de tokens de entrada: {count.total_tokens}", "main_agents")
 
         # Llamar al modelo limitando tokens de salida
         response = client.models.generate_content(
             model="gemini-2.0-flash",
             contents=contents
         )
-        log_normal(f"LLM response: {response}", "main_agents")
+        # log_normal(f"LLM response: {response}", "main_agents")
         
         save_file(
             txt_path,
@@ -71,7 +71,7 @@ async def main_agents(abn: str, pdf_names: list, pdf_folder, txt_path):
             },
             "llm_response": response.text
         }
-        
+        # return {}
     except Exception as e:
         log_error(f"Error al llamar al modelo: {e}", "main_agents")
         raise e
