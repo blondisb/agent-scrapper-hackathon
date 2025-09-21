@@ -48,11 +48,16 @@ CA_FINDER_URL="/rslts-en.aspx?l=2,3,7&a="
 BASE_PATH_CA = "/tmp/ca"
 
 
-model1 = LiteLLMModel(
-    model_id = "gemini/gemini-2.0-flash", api_key = os.getenv("GEMINI_API_KEY")
-    # model_id = "gemini/gemini-1.5-flash", api_key = os.getenv("GEMINI_API_KEY")
-    # model_id = "ollama/qwen2.5:0.5b"
-)
+# Lazy load model to speed up startup
+model1 = None
+
+def get_model():
+    global model1
+    if model1 is None:
+        model1 = LiteLLMModel(
+            model_id = "gemini/gemini-2.0-flash", api_key = os.getenv("GEMINI_API_KEY")
+        )
+    return model1
 
 
 # ================================================================================================================================================
@@ -180,7 +185,7 @@ async def search_company(
     y devuelve IDs y nombres extraídos con XPath.
     """
     log_normal(f"IN: {company, country}")
-    url = await url_finder_agent(model1, company.upper(), country.upper())
+    url = await url_finder_agent(get_model(), company.upper(), country.upper())
     resp = await reading_webpagecontent(url)
 
     log_normal(f"OUT: {resp}")
@@ -196,7 +201,5 @@ def delete_folder(folder_name: str):
 
 
 # ================================================================================================================================================
-if __name__ == "__main__":
-    port = int(os.getenv("PORT", 8080))
-    uvicorn.run("main:app", host="0.0.0.0", port=port)
+# Server startup is handled by Docker CMD: uvicorn main:app --host 0.0.0.0 --port 8080
     
