@@ -180,12 +180,10 @@ async def search_company(
     y devuelve IDs y nombres extraídos con XPath.
     """
     log_normal(f"IN: {company, country}")
-    # resp = await main_scrapper_agent(company.upper(), country.upper())
     url = await url_finder_agent(model1, company.upper(), country.upper())
 
     # url = "https://www.3mcanada.ca/3M/en_CA/company-ca/"
     # url = "https://www.toyota.ca/en/"
-    # resp = await visitor_agent(model1, url)
     resp = await reading_webpagecontent(url)
 
     log_normal(f"OUT: {resp}")
@@ -194,7 +192,7 @@ async def search_company(
 
 # ================================================================================================================================================
 @app.delete(f"{BASE_URL}/deletefolder")
-def delete_folder(folder_name: str = '.'):
+def delete_folder(folder_name: str):
     return delete_folders(folder_name)
 
 
