@@ -13,7 +13,8 @@ async def reading_webpagecontent(url):
     try:
         content_page =  await visit_tool_srv.forward(
             url     = url,
-            query   = """I need all information related to: The UK's Modern Slavery Act 2015 is a landmark piece of legislation designed to combat modern slavery and human trafficking by consolidating previous offenses, increasing penalties for perpetrators, introducing measures to protect victims, and creating an Independent Anti-slavery Commissioner. A key provision is Section 54, which requires large commercial organizations (those with annual turnover above a set threshold) to publish a yearly statement detailing the steps they've taken to address slavery in their supply chains. """
+            # query   = """I need all information related to: The UK's Modern Slavery Act 2015 is a landmark piece of legislation designed to combat modern slavery and human trafficking by consolidating previous offenses, increasing penalties for perpetrators, introducing measures to protect victims, and creating an Independent Anti-slavery Commissioner. A key provision is Section 54, which requires large commercial organizations (those with annual turnover above a set threshold) to publish a yearly statement detailing the steps they've taken to address slavery in their supply chains. """
+            query   = "Search for data related to modern-slavery"
         )
         log_normal(f"content_pagea: {content_page}", "reading_webpagecontent")
 
