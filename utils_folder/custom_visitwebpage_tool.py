@@ -6,15 +6,16 @@ import re
 from sentence_transformers import SentenceTransformer, CrossEncoder
 from smolagents import VisitWebpageTool
 import logging
-
-from custom_forward import customforward
-from forward_playwright import scrape_playwright
+import asyncio
+# from custom_forward import customforward
+from utils_folder.forward_playwright import scrape_playwright, scrape_playwright_async
+# from forward_playwright import scrape_playwright, scrape_playwright_async
 
 logger = logging.getLogger(__name__)
 
 
 class CustomVisitWebpageTool(VisitWebpageTool):
-    name = "get_webpage_content"
+    name = "custom_scrapping_modern_slavery"
     description = """
     Searches the content of a web page at a given URL.
     Returns the content of the page that matches the given search query.
@@ -40,7 +41,12 @@ class CustomVisitWebpageTool(VisitWebpageTool):
         
         # content = super().forward(url=url)
         # content = customforward(url)
-        content = scrape_playwright(url)
+        try:
+            content = scrape_playwright(url)
+            # content = await scrape_playwright_async(url)
+        except Exception as e:
+            logger.error(f"Scraping failed: {e}")
+            return ""  # or some marker the content isn’t usable
 
         results = self.get_sentences(content)
         results = self.apply_bi_encoder(query, results)
@@ -153,7 +159,7 @@ if __name__ == "__main__":
         level=logging.INFO,  # or DEBUG if you want more details
         format="%(name)s - %(levelname)s - %(message)s"
     )
-    logging.getLogger("__main__").setLevel(logging.DEBUG)
+    # logging.getLogger("__main__").setLevel(logging.DEBUG)
 
     #url="https://en.wikipedia.org/wiki/Pont_des_Arts",
     # url="https://kids.nationalgeographic.com/animals/mammals/facts/leopard",
@@ -166,13 +172,13 @@ if __name__ == "__main__":
     # query = "give me details abour modern slavery risks"
 
     # url = "https://www.tesla.com/en_ca" 
-    # url = "https://www.airbus.com/en"
-    url = "https://www.boeing.ca/"
+    url = "https://www.airbus.com/en"
+    # url = "https://www.boeing.ca/"
     query = "talk me about financial results and modern slavery"
 
     tool = CustomVisitWebpageTool()
-    result = tool.forward(
+    result = asyncio.run(tool.forward(
         url     = url,
         query   = query
-    )
+    ))
     print(result)

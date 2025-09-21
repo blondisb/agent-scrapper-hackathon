@@ -15,8 +15,9 @@ from utils_folder.loggger import log_normal
 from utils_folder.utils import delete_folders, find_existing_file
 
 from services_agents.agentss import main_agents
-from services_agents.scrapper_agent import main_scrapper_agent
+# from services_agents.scrapper_agent import main_scrapper_agent
 from services_agents.search_agent import url_finder_agent, visitor_agent
+from services_agents.reader_webpage_info import reading_webpagecontent
 
 from services.au.get_AU_companies import au_companies_id
 from services.au.get_statements import au_statements
@@ -180,10 +181,13 @@ async def search_company(
     """
     log_normal(f"IN: {company, country}")
     # resp = await main_scrapper_agent(company.upper(), country.upper())
-    # url = await url_finder_agent(model1, company.upper(), country.upper())
+    url = await url_finder_agent(model1, company.upper(), country.upper())
 
-    url = "https://www.3mcanada.ca/3M/en_CA/company-ca/"
-    resp = await visitor_agent(model1, url)
+    # url = "https://www.3mcanada.ca/3M/en_CA/company-ca/"
+    # url = "https://www.toyota.ca/en/"
+    # resp = await visitor_agent(model1, url)
+    resp = await reading_webpagecontent(url)
+
     log_normal(f"OUT: {resp}")
     return {"data": resp}
     
