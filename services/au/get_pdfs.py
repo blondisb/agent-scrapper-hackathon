@@ -1,5 +1,6 @@
+from urllib.parse import urljoin
 import os, time
-from fastapi.responses import JSONResponse
+from fastapi import HTTPException
 import httpx
 from lxml import html
 from utils_folder.loggger import log_error, log_normal
@@ -24,11 +25,15 @@ async def au_pdfs(statesments: list, pdf_folder: str) -> list:
                 page_tree = html.fromstring(page.content)
 
                 iframe_src = page_tree.xpath('/html/body/main/div/div[2]/div/div/iframe/@src')
+                log_normal(iframe_src, "au_pdfs -- iframe_src")
                 if not iframe_src:
                     log_error(f"⚠ No se encontró PDF en {statement_url}")
                     continue
 
-                pdf_url = iframe_src[0] if iframe_src[0].startswith("/") else iframe_src[0]
+
+                pdf_url = urljoin(statement_url, iframe_src[0])
+                log_normal(pdf_url, "au_pdfs -- pdfurl")
+                # pdf_url = iframe_src[0] if iframe_src[0].startswith("/") else iframe_src[0]
                 # json_pdf_url[dicts["date"]] = pdf_url
 
                 pdf_name = pdf_url.strip("/").split("/")[-2] + ".pdf"
@@ -46,7 +51,7 @@ async def au_pdfs(statesments: list, pdf_folder: str) -> list:
 
         except Exception as e:
             log_error(e, "scrape_pdf")
-            raise JSONResponse(status_code=500, content={"error": str(e)})
+            raise HTTPException(status_code=500, detail=str(e))
         
     log_normal(f"✅ PDF descargado: {pdf_paths}", "scrape_pdf")
     return pdf_paths

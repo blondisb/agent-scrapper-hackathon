@@ -39,7 +39,7 @@ class CustomVisitWebpageTool(VisitWebpageTool):
     def forward(self, url: str, query: str) -> str:
         logger.debug(f">> CustomVisitWebpageTool.forward: url={url}, query={query}")
         
-        # content = super().forward(url=url)
+        content = super().forward(url=url)
         # content = customforward(url)
         try:
             content = scrape_playwright(url)

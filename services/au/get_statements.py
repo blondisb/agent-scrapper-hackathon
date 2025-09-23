@@ -60,7 +60,7 @@ async def au_statements(base_url: str, abn: str) -> list:
                 abn_val = explicit_abn.replace("ABN:", "").strip()
 
             matches.append({
-                "href": base_url+href,
+                "href": href,
                 "abn": abn,
                 "name": name_val,
                 "date": date_val,

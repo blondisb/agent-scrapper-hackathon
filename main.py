@@ -19,7 +19,7 @@ from services_agents.agentss import main_agents
 from services_agents.search_agent import url_finder_agent, visitor_agent
 from services_agents.reader_webpage_info import reading_webpagecontent
 
-from services.au.get_AU_companies import au_companies_id
+from services.au.get_AU_companies import au_companies_id, au_scrape_v2
 from services.au.get_statements import au_statements
 from services.au.get_pdfs import au_pdfs
 
@@ -68,10 +68,11 @@ async def search_company(company: str = Query(..., min_length=2)) -> dict:
     y devuelve IDs y nombres extraídos con XPath.
     """
     log_normal(f"IN: {company}")
-    resp = await au_companies_id(AU_COMPANIES_ID, company)
+    # resp = await au_companies_id(AU_COMPANIES_ID, company)
+    resp = await au_scrape_v2(AU_COMPANIES_ID, company)
     
     log_normal(f"OUT: {resp}")
-    return resp
+    return {"matches": resp}
 
 
 @app.get(f"{BASE_URL}/AUcompanies/statements")
@@ -86,9 +87,12 @@ async def search_au_statemens(abn: str) -> dict:
     llm_response = find_existing_file(txt_path)
 
     if llm_response is None:
-        statements      = await au_statements(AU_STATEMENTS_URL, abn)    
+        statements      = await au_statements(AU_STATEMENTS_URL, abn)  
+        log_normal(statements, "search_au_statemens")  
         pdf_names       = await au_pdfs(statements, f"{abn_path}/pdf")
+        log_normal(pdf_names, "search_au_statemens")  
         llm_response    = await main_agents(abn, pdf_names, f"{abn_path}/pdf", txt_path)
+        log_normal(llm_response, "search_au_statemens")  
     
     log_normal(f"OUT2: {abn} || {llm_response}", "search_au_statemens")
     return {"data": llm_response}
