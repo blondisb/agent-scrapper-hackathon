@@ -9,6 +9,7 @@ from dotenv import load_dotenv, find_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi import FastAPI, Query
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from smolagents import LiteLLMModel
 
 from utils_folder.loggger import log_normal
@@ -30,9 +31,22 @@ from services.uk.get_uk_pdfs import uk_pdfs
 from services.ca.ca_statements import ca_statements1
 from services.ca.ca_pdfs import ca_pdfs
 
+
+
 # ================================================================================================================================================
 load_dotenv(find_dotenv(), override=True)
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)  
+
+
+# ================================================================================================================================================
+
 
 BASE_URL = os.getenv("BASE_URL", "/outslavery")
 AU_COMPANIES_ID = os.getenv("AU_COMPANIES_ID", "https://abr.business.gov.au/Search/ResultsActive")
@@ -58,6 +72,9 @@ def get_model():
             model_id = "gemini/gemini-2.0-flash", api_key = os.getenv("GEMINI_API_KEY")
         )
     return model1
+
+
+
 
 
 # ================================================================================================================================================
