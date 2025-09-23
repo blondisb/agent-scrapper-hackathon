@@ -87,8 +87,12 @@ async def search_au_statemens(abn: str) -> dict:
     llm_response = find_existing_file(txt_path)
 
     if llm_response is None:
-        statements      = await au_statements(AU_STATEMENTS_URL, abn)  
-        log_normal(statements, "search_au_statemens")  
+        statements = await au_statements(AU_STATEMENTS_URL, abn) 
+        log_normal(statements, "search_au_statemens")
+
+        if len(statements) == 0:
+            return {"data": f"Not documents found for the company witn ABN: {abn}"}
+         
         pdf_names       = await au_pdfs(statements, f"{abn_path}/pdf")
         log_normal(pdf_names, "search_au_statemens")  
         llm_response    = await main_agents(abn, pdf_names, f"{abn_path}/pdf", txt_path)
@@ -129,6 +133,8 @@ async def search_uk_statemens(id_company: str) -> dict:
         # .
         statements = await uk_statements(UK_STATEMENTS_URL, id_company)
         log_normal(statements, "uk_statements")
+        if len(statements) == 0:
+            return {"data": f"Not documents found for the company with id company: {id_company}"}
         # .
         pdf_names = await uk_pdfs(statements, f"{company_path}/pdf")
         log_normal(pdf_names, "uk_statements")
@@ -165,6 +171,8 @@ async def search_ca_company(company_name: str = Query(..., min_length=2)) -> dic
         
         resp_stt = await ca_statements1(search_url, CA_BASE_URL)
         log_normal(resp_stt, "search_ca_company")
+        if len(resp_stt) == 0:
+            return {"data": f"Not documents found for the company with company: {company_name}"}
 
         pdf_names = await ca_pdfs(resp_stt, pdf_folder)
         log_normal(pdf_names, "search_ca_company/pdf_names")
