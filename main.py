@@ -3,6 +3,7 @@ import time
 import uvicorn
 import httpx
 import shutil
+import ollama
 
 from lxml import html
 from dotenv import load_dotenv, find_dotenv
@@ -16,6 +17,7 @@ from utils_folder.loggger import log_normal
 from utils_folder.utils import delete_folders, find_existing_file
 
 from services_agents.agentss import main_agents
+from services_agents.statement_reader_ollama import main_agents2
 # from services_agents.scrapper_agent import main_scrapper_agent
 from services_agents.search_agent import url_finder_agent, visitor_agent
 from services_agents.reader_webpage_info import reading_webpagecontent
@@ -64,16 +66,29 @@ BASE_PATH_CA = "/tmp/ca"
 
 # Lazy load model to speed up startup
 model1 = None
+testingg = True
+
 
 def get_model():
     global model1
-    if model1 is None:
-        model1 = LiteLLMModel(
-            model_id = "gemini/gemini-2.0-flash", api_key = os.getenv("GEMINI_API_KEY")
-        )
-    return model1
 
-
+    if testingg == True:
+        if model1 is None:
+            model1 = LiteLLMModel(
+                model_id = "gemini/gemini-2.0-flash", api_key = os.getenv("GEMINI_API_KEY")
+            )
+        return model1
+    else:
+            
+        global model1
+        if model1 is None:
+            # Aquí puedes "anclar" el modelo que quieres usar por defecto
+            # Ej: llama3, mistral, gemma, etc.
+            model1 = {
+                "client": ollama,
+                "model_id": os.getenv("OLLAMA_MODEL", "llama3")  # configurable por env
+            }
+        return model1
 
 
 
@@ -112,7 +127,11 @@ async def search_au_statemens(abn: str) -> dict:
          
         pdf_names       = await au_pdfs(statements, f"{abn_path}/pdf")
         log_normal(pdf_names, "search_au_statemens")  
-        llm_response    = await main_agents(abn, pdf_names, f"{abn_path}/pdf", txt_path)
+
+        if testingg == True:
+            llm_response    = await main_agents(abn, pdf_names, f"{abn_path}/pdf", txt_path)
+        else:
+            llm_response    = await main_agents2(abn, pdf_names, f"{abn_path}/pdf", txt_path)
         log_normal(llm_response, "search_au_statemens")  
     
     log_normal(f"OUT2: {abn} || {llm_response}", "search_au_statemens")
@@ -156,7 +175,11 @@ async def search_uk_statemens(id_company: str) -> dict:
         pdf_names = await uk_pdfs(statements, f"{company_path}/pdf")
         log_normal(pdf_names, "uk_statements")
         # .
-        llm_response = await main_agents(id_company, pdf_names, f"{company_path}/pdf", txt_path)
+
+        if testingg == True:
+            llm_response = await main_agents(id_company, pdf_names, f"{company_path}/pdf", txt_path)
+        else:
+            llm_response = await main_agents2(id_company, pdf_names, f"{company_path}/pdf", txt_path)
     
     log_normal(f"OUT1: {id_company} || {llm_response}", "search_uk_statemens")
     return {"data": llm_response}
@@ -194,7 +217,11 @@ async def search_ca_company(company_name: str = Query(..., min_length=2)) -> dic
         pdf_names = await ca_pdfs(resp_stt, pdf_folder)
         log_normal(pdf_names, "search_ca_company/pdf_names")
 
-        llm_response = await main_agents(company_id, pdf_names, pdf_folder, txt_path)
+        if testingg == True:
+            llm_response = await main_agents(company_id, pdf_names, pdf_folder, txt_path)
+        else:
+            llm_response = await main_agents2(company_id, pdf_names, pdf_folder, txt_path)
+
 
     log_normal(f"OUT: {llm_response}")
     return {"data": llm_response}

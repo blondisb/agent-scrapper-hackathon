@@ -13,6 +13,8 @@ smolagents[litellm]
 markdownify
 # sentence_transformers
 playwright # playwright install chromium
+PyPDF2
+ollama
 # --------------
 # crewai[tools]
 # beautifulsoup4
