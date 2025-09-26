@@ -60,7 +60,8 @@ async def main_agents(abn: str, pdf_names: list, pdf_folder, txt_path):
         
         save_file(
             txt_path,
-            f"(({count.total_tokens}, {response.usage_metadata.total_token_count})) || {response.text}"
+            # f"(({count.total_tokens}, {response.usage_metadata.total_token_count})) || {response.text}"
+            response.text
         )
 
         # print(response.text)

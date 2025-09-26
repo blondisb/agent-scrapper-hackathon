@@ -57,8 +57,8 @@ def find_existing_file(file_path):
     try:
         if os.path.exists(file_path):
             with open(file_path, "r", encoding="utf-8") as f:
-                return f.read()
-        return None
+                return {"llm_response": f.read()}
+        return {"llm_response": None}
     except Exception as e:
         log_error(f"Error al buscar el archivo: {e}", "find_existing_file")
         raise e
