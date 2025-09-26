@@ -22,7 +22,7 @@ async def uk_companies_id(BASE_URL, company: str):
                     company_name = name[0].strip()
                     # el id viene en la URL tipo "/company/02194014"
                     company_id = comp_id[0].split("/")[-1]
-                    results.append({"name": company_name, "id_company": company_id})
+                    results.append({"name": company_name, "id": company_id})
 
             return JSONResponse(content={"matches": results if len(results) > 0 else "Not companies found"})
         except Exception as e:
