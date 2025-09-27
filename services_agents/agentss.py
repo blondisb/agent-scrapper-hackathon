@@ -34,7 +34,7 @@ async def main_agents(abn: str, pdf_names: list, pdf_folder, txt_path):
             - Identify recurring issues or risks that remain unaddressed.
             - Highlight any significant changes in governance, supply chain monitoring, or worker protection.
 
-            Finally, provide a comparative table or bullet list showing year-by-year progress in:
+            Finally, provide a comparative *bullet list* showing year-by-year progress in:
             1. Risks identified
             2. Mitigation measures
             3. Policies implemented
