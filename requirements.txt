@@ -11,6 +11,9 @@ smolagents[tools]
 ddgs
 smolagents[litellm]
 markdownify
+groq
+tiktoken
+pypdf2
 # sentence_transformers
 playwright # playwright install chromium
 # --------------

@@ -3,6 +3,7 @@ import time
 import uvicorn
 import httpx
 import shutil
+import json
 
 from lxml import html
 from dotenv import load_dotenv, find_dotenv
@@ -15,10 +16,13 @@ from smolagents import LiteLLMModel
 from utils_folder.loggger import log_normal
 from utils_folder.utils import delete_folders, find_existing_file
 
-from services_agents.agentss import main_agents
+# from services_agents.agentss import main_agents
 # from services_agents.scrapper_agent import main_scrapper_agent
-from services_agents.search_agent import url_finder_agent, visitor_agent
+from services_agents.search_agent import url_finder_agent
 from services_agents.reader_webpage_info import reading_webpagecontent
+
+from services_agents.llm_calling import summarize_with_groq_async, summarize_with_groq_async_chunked
+# from services_agents.ollama_call import summarize_with_ollama_async
 
 from services.au.get_AU_companies import au_companies_id, au_scrape_v2
 from services.au.get_statements import au_statements
@@ -61,18 +65,25 @@ CA_BASE_URL = "https://www.publicsafety.gc.ca/cnt/rsrcs/lbrr/ctlg"
 CA_FINDER_URL="/rslts-en.aspx?l=2,3,7&a="
 BASE_PATH_CA = "/tmp/ca"
 
+MODEL_ENV = os.getenv("MODEL_ENV", "deepseek-r1-distill-llama-70b")
 
-# Lazy load model to speed up startup
-model1 = None
+
+
+# model1 = None
+# def get_model():
+#     global model1
+#     if model1 is None:
+#         model1 = LiteLLMModel(
+#             model_id = "gemini/gemini-2.0-flash", api_key = os.getenv("GEMINI_API_KEY")
+#         )
+#     return model1
 
 def get_model():
-    global model1
-    if model1 is None:
-        model1 = LiteLLMModel(
-            model_id = "gemini/gemini-2.0-flash", api_key = os.getenv("GEMINI_API_KEY")
-        )
-    return model1
-
+    return LiteLLMModel(
+        model_id=f"groq/{MODEL_ENV}"
+        ,api_key=os.environ.get("GROQ_API_KEY")
+        # ,api_base="https://api.groq.com/openai/v1"
+    )
 
 
 
@@ -101,19 +112,25 @@ async def search_au_statemens(abn: str) -> dict:
 
     abn_path = f"{BASE_PATH_AU}/{abn}"
     txt_path = f"{abn_path}/summary.txt"
-    llm_response = find_existing_file(txt_path)
+    final_data = find_existing_file(txt_path)
 
-    if llm_response is None:
+    if final_data["llm_response"] is None:
         statements = await au_statements(AU_STATEMENTS_URL, abn) 
-        log_normal(statements, "search_au_statemens")
 
         if len(statements) == 0:
             return {"data": f"Not documents found for the company witn ABN: {abn}"}
          
         pdf_names       = await au_pdfs(statements, f"{abn_path}/pdf")
-        log_normal(pdf_names, "search_au_statemens")  
-        llm_response    = await main_agents(abn, pdf_names, f"{abn_path}/pdf", txt_path)
-        log_normal(llm_response, "search_au_statemens")  
+        # llm_response    = await main_agents(abn, pdf_names, f"{abn_path}/pdf", txt_path)
+        
+        llm_response = await summarize_with_groq_async(
+            file_paths=pdf_names,
+            model=MODEL_ENV,
+            max_tokens=20000,
+            pdf_folder=f"{abn_path}/pdf",
+            txt_path=txt_path
+        )
+        
     
     log_normal(f"OUT2: {abn} || {llm_response}", "search_au_statemens")
     return {"data": llm_response}
@@ -144,19 +161,24 @@ async def search_uk_statemens(id_company: str) -> dict:
 
     company_path = f"{BASE_PATH_UK}/{id_company}"
     txt_path = f"{company_path}/summary.txt"
-    llm_response = find_existing_file(txt_path)
+    final_data = find_existing_file(txt_path)
 
-    if llm_response is None:
-        # .
+    if final_data["llm_response"] is None:
         statements = await uk_statements(UK_STATEMENTS_URL, id_company)
-        log_normal(statements, "uk_statements")
+
         if len(statements) == 0:
             return {"data": f"Not documents found for the company with id company: {id_company}"}
-        # .
+        
         pdf_names = await uk_pdfs(statements, f"{company_path}/pdf")
-        log_normal(pdf_names, "uk_statements")
-        # .
-        llm_response = await main_agents(id_company, pdf_names, f"{company_path}/pdf", txt_path)
+        # llm_response = await main_agents(id_company, pdf_names, f"{company_path}/pdf", txt_path)
+
+        llm_response = await summarize_with_groq_async(
+            file_paths=pdf_names,
+            model=MODEL_ENV,
+            max_tokens=20000,
+            pdf_folder=f"{company_path}/pdf",
+            txt_path=txt_path
+        )
     
     log_normal(f"OUT1: {id_company} || {llm_response}", "search_uk_statemens")
     return {"data": llm_response}
@@ -182,19 +204,24 @@ async def search_ca_company(company_name: str = Query(..., min_length=2)) -> dic
     pdf_folder = f"{BASE_PATH_CA}/{company_id}/pdf"
     txt_path = f"{BASE_PATH_CA}/{company_id}/summay.txt"
     search_url = CA_BASE_URL + CA_FINDER_URL + company_url
+    final_data = find_existing_file(txt_path)
 
-    llm_response = find_existing_file(txt_path)
-    if llm_response is None:
-        
+    if final_data["llm_response"] is None:
         resp_stt = await ca_statements1(search_url, CA_BASE_URL)
-        log_normal(resp_stt, "search_ca_company")
         if len(resp_stt) == 0:
             return {"data": f"Not documents found for the company with company: {company_name}"}
 
         pdf_names = await ca_pdfs(resp_stt, pdf_folder)
-        log_normal(pdf_names, "search_ca_company/pdf_names")
+        # llm_response = await main_agents(company_id, pdf_names, pdf_folder, txt_path)
 
-        llm_response = await main_agents(company_id, pdf_names, pdf_folder, txt_path)
+        llm_response = await summarize_with_groq_async_chunked(
+            file_paths=pdf_names,
+            model=MODEL_ENV,
+            max_tokens_input=1000,
+            max_tokens_summary=1000,
+            pdf_folder=f"{pdf_folder}/pdf",
+            txt_path=txt_path
+        )
 
     log_normal(f"OUT: {llm_response}")
     return {"data": llm_response}
