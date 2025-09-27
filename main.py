@@ -46,7 +46,11 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-)  
+) 
+
+
+os.environ["LITELLM_CACHE_DIR"] = "/tmp/litellm_cache"
+
 
 
 # ================================================================================================================================================
